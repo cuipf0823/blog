@@ -1,0 +1,19 @@
+<ul class="posts">
+{% if posts is not none %}
+    {% for post in posts %}
+        <li class="post">
+            <div class="post-thumbnail">
+                <a href="{{ url_for('.user', username=post.author) }}">
+                    <img class="img-rounded profile-thumbnail" src= "{{ post.author_gravatar(size=40) }}">
+                </a>
+            </div>
+            <div class="post-content">
+                <div class="post-title">{{ post.title }}</div>
+                <div class="post-time">{{ post.time }}</div>
+                <div class="post-author"><a href="{{ url_for('.user', username=post.author) }}">{{ post.author }}</a></div>
+                <div class="post-body">{{ post.content }}</div>
+            </div>
+        </li>
+    {% endfor %}
+{% endif %}
+</ul>

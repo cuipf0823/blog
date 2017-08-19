@@ -1,13 +1,14 @@
 # !/usr/bin/python
 # coding=utf-8
-from flask import render_template
+from flask import render_template, request
 from flask import redirect, url_for, flash, abort
 from flask_login import login_required
 from flask_login import current_user
 from . import main
 from ..models import get_user_by_name, update_frofile, update_admin_profile
-from ..models import get_user_by_id, Post, Permission
+from ..models import get_user_by_id, Permission, Pagintion
 from ..models import publish_post, posts_by_page, posts_by_author
+from ..models import total_posts
 from .forms import EditProfileForm, EditProfileFormAdmin, PostForm
 from ..decorators import admin_required
 
@@ -18,8 +19,13 @@ def index():
     if current_user.can(Permission.WRITE_ARTICLES) and form.validate_on_submit():
         publish_post(form.title.data, current_user.id, form.body.data, '')
         return redirect(url_for('.index'))
-    posts = posts_by_page(1)
-    return render_template('index.html', form=form, posts=posts, permission=Permission)
+    page = request.args.get('page', 1, type=int)
+    posts = posts_by_page(page)
+    pagintion = Pagintion(page, posts, total_posts())
+    print pagintion.page
+    print pagintion.iter_pages()
+    print pagintion.total
+    return render_template('index.html', form=form, posts=posts, permission=Permission, pagintion=pagintion)
 
 
 @main.route('/user/<username>')

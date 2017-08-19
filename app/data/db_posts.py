@@ -24,8 +24,6 @@ POSTS_COUNT = 'posts:count'
 POSTS_DEL_LIST = 'posts:del_list'
 # 每个作者文章列表
 POST_AUTHOR_LIST = 'posts:author:'
-# maximum number articles per page
-POST_NUM_PAGE = 10
 
 
 def publish_post(title, author_id, content, category):
@@ -47,15 +45,22 @@ def delete_post(post_id):
     rd.lpush(POSTS_DEL_LIST, post_id)
 
 
-def posts_by_page(page_id):
+def total_posts():
+    """
+    return total posts
+    """
+    return rd.llen(POSTS_LIST)
+
+
+def posts_by_page(page_id, per_page):
     """
     paging display
     page_id: start from 1
     post ID list key is str type
     """
-    pages = int(rd.llen(POSTS_LIST) / POST_NUM_PAGE + 1)
+    pages = int(rd.llen(POSTS_LIST) / per_page + 1)
     if 0 < page_id <= pages:
-        return util.convert(rd.lrange(POSTS_LIST, (page_id - 1) * POST_NUM_PAGE, page_id * POST_NUM_PAGE - 1))
+        return util.convert(rd.lrange(POSTS_LIST, (page_id - 1) * per_page, page_id * per_page - 1))
     print('invaild param page id[{0}, {1}]'.format(1, pages))
 
 
@@ -67,13 +72,13 @@ def get_post(post_id):
     return util.convert(rd.hgetall('post:{}'.format(post_id)))
 
 
-def posts_by_author(author_id, page_id):
+def posts_by_author(author_id, page_id, per_page):
     """
     paging display
     get posts list by author
     """
-    pages = int(rd.llen(POST_AUTHOR_LIST + '{}'.format(author_id)) / POST_NUM_PAGE + 1)
+    pages = int(rd.llen(POST_AUTHOR_LIST + '{}'.format(author_id)) / per_page + 1)
     if 0 < page_id <= pages:
-        return util.convert(rd.lrange(POST_AUTHOR_LIST + '{}'.format(author_id), (page_id - 1) * POST_NUM_PAGE,
-                                      page_id * POST_NUM_PAGE - 1))
-    print('posts_by_author invaild param author {0} page id[{1}, {2}]: {3}'.format(author, 1, pages, page_id))
+        return util.convert(rd.lrange(POST_AUTHOR_LIST + '{}'.format(author_id), (page_id - 1) * per_page,
+                                      page_id * per_page - 1))
+    print('posts_by_author invaild param author {0} page id[{1}, {2}]: {3}'.format(author_id, 1, pages, page_id))

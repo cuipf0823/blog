@@ -8,12 +8,12 @@ from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from werkzeug.security import check_password_hash
 from werkzeug.security import generate_password_hash
 from .data import db_users, db_posts
-from . import rd
 from . import login_manager
-from . import util
 import hashlib
-import time
+import math
 
+# maximum number articles per page
+POST_NUM_PAGE = 10
 
 ANONYMOUS_ROLE = 0  # 匿名用户 为登陆的用户, 只有阅读权限
 USER_ROLE = 1  # 普通用户  新用户默认角色, 可以发表文章, 评论, 关注他人
@@ -338,7 +338,7 @@ def publish_post(title, author_id, content, category):
 
 
 def posts_by_page(page_id):
-    post_ids = db_posts.posts_by_page(page_id)
+    post_ids = db_posts.posts_by_page(page_id, POST_NUM_PAGE)
     if post_ids is not None:
         posts = []
         for post_id in post_ids:
@@ -347,12 +347,108 @@ def posts_by_page(page_id):
 
 
 def posts_by_author(author_id, page_id):
-    post_ids = db_posts.posts_by_author(author_id, page_id)
+    post_ids = db_posts.posts_by_author(author_id, page_id, POST_NUM_PAGE)
     if post_ids is not None:
         posts = []
         for post_id in post_ids:
             posts.append(Post(db_posts.get_post(post_id)))
         return posts
+
+
+def total_posts():
+    return db_posts.total_posts()
+
+
+class Pagintion:
+    def __init__(self, page, items, total, per_page=POST_NUM_PAGE):
+        # the current page number
+        self._page = page
+        # the number of items to be displayed on a page
+        self._per_page = per_page
+        # the total number
+        self._total = total
+        # the items for the current page
+        self._items = items
+        # the total number of pages
+        if self._per_page == 0:
+            self._pages = 0
+        else:
+            self._pages = int(math.ceil(self._total / float(self._per_page)))
+
+    @property
+    def page(self):
+        return self._page
+
+    @property
+    def pages(self):
+        return self._pages
+
+    @property
+    def total(self):
+        return self._total
+
+    @property
+    def items(self):
+        return self._items
+
+    @property
+    def pre_page(self):
+        return self._per_page
+
+    @property
+    def has_prev(self):
+        """
+         return True if a previous page exists
+        """
+        return self._page > 1
+
+    @property
+    def has_next(self):
+        """
+         return True if a next page exists
+        """
+        return self._pages > self._page
+
+    @property
+    def pre_num(self):
+        """
+         number of the previous page.
+        """
+        if self.has_prev:
+            return self._page - 1
+
+    @property
+    def next_num(self):
+        """
+         number of the next page
+        """
+        if self.has_next:
+            return self._page + 1
+
+    def next(self):
+        """
+        return a class Ragination
+        """
+        assert self.has_next, 'must be has next'
+        return Pagintion(self.next_num, self.total, posts_by_page(self.next_num))
+
+    def prev(self):
+        """
+        return a class Ragination
+        """
+        assert self.has_prev, 'must be has prev'
+        return Pagintion(self.pre_num, self.total, posts_by_page(self.pre_num))
+
+    def iter_pages(self, left_edge=2, left_current=2, right_current=5, right_edge=2):
+        last = 0
+        for num in xrange(1, self.pages + 1):
+            if num <= left_edge or \
+                    (self._page - left_current - 1 < num < self._page + right_current) or \
+                    (num > self._pages - right_edge):
+                if last + 1 != num:
+                    yield None
+                yield num
+                last = num
         
 
 

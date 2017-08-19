@@ -7,7 +7,7 @@ from .. import util
 '''
 1. 用户详细信息; 使用redis中的散列类型保存, key是'user:id';
 2. 用户总数; 保存于users:count中;
-3. email.to.id 根据email查询到具体用户ID;
+3. email.to.id 根据email查询到具体用户ID; 这里可以调整为
 4. name.to.id 根据用户名查询到具体用户ID
 '''
 

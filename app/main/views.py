@@ -6,7 +6,7 @@ from flask_login import login_required
 from flask_login import current_user
 from . import main
 from ..models import get_user_by_name, update_frofile, update_admin_profile
-from ..models import get_user_by_id, Permission, Pagintion
+from ..models import get_user_by_id, Permission, Pagination
 from ..models import publish_post, posts_by_page, posts_by_author
 from ..models import total_posts
 from .forms import EditProfileForm, EditProfileFormAdmin, PostForm
@@ -21,11 +21,8 @@ def index():
         return redirect(url_for('.index'))
     page = request.args.get('page', 1, type=int)
     posts = posts_by_page(page)
-    pagintion = Pagintion(page, posts, total_posts())
-    print pagintion.page
-    print pagintion.iter_pages()
-    print pagintion.total
-    return render_template('index.html', form=form, posts=posts, permission=Permission, pagintion=pagintion)
+    pagination = Pagination(page, posts, total_posts())
+    return render_template('index.html', form=form, posts=posts, permission=Permission, pagination=pagination)
 
 
 @main.route('/user/<username>')

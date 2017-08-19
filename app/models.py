@@ -359,7 +359,7 @@ def total_posts():
     return db_posts.total_posts()
 
 
-class Pagintion:
+class Pagination:
     def __init__(self, page, items, total, per_page=POST_NUM_PAGE):
         # the current page number
         self._page = page
@@ -430,14 +430,14 @@ class Pagintion:
         return a class Ragination
         """
         assert self.has_next, 'must be has next'
-        return Pagintion(self.next_num, self.total, posts_by_page(self.next_num))
+        return Pagination(self.next_num, posts_by_page(self.next_num), self.total)
 
     def prev(self):
         """
         return a class Ragination
         """
         assert self.has_prev, 'must be has prev'
-        return Pagintion(self.pre_num, self.total, posts_by_page(self.pre_num))
+        return Pagination(self.pre_num, posts_by_page(self.pre_num), self.total)
 
     def iter_pages(self, left_edge=2, left_current=2, right_current=5, right_edge=2):
         last = 0

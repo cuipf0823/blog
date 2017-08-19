@@ -8,7 +8,7 @@ from . import main
 from ..models import get_user_by_name, update_frofile, update_admin_profile
 from ..models import get_user_by_id, Permission, Pagination
 from ..models import publish_post, posts_by_page, posts_by_author
-from ..models import total_posts
+from ..models import total_posts, total_posts_by_author
 from .forms import EditProfileForm, EditProfileFormAdmin, PostForm
 from ..decorators import admin_required
 
@@ -30,8 +30,10 @@ def user(username):
     user_info = get_user_by_name(username)
     if user_info is None:
         abort(404)
-    posts = posts_by_author(user_info.id, 1)
-    return render_template('user.html', user=user_info, posts=posts)
+    page = request.args.get('page', 1, type=int)
+    posts = posts_by_author(user_info.id, page)
+    pagination = Pagination(page, posts, total_posts_by_author(user_info.id))
+    return render_template('user.html', user=user_info, posts=posts, pagination=pagination)
 
 
 @main.route('/edit-profile', methods=['GET', 'POST'])

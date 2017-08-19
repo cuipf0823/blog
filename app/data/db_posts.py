@@ -47,9 +47,16 @@ def delete_post(post_id):
 
 def total_posts():
     """
-    return total posts
+    return total posts number
     """
     return rd.llen(POSTS_LIST)
+
+
+def total_posts_by_author(author_id):
+    """
+    return total posts number of author
+    """
+    return rd.llen(POST_AUTHOR_LIST + '{}'.format(author_id))
 
 
 def posts_by_page(page_id, per_page):

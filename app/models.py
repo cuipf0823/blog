@@ -359,6 +359,10 @@ def total_posts():
     return db_posts.total_posts()
 
 
+def total_posts_by_author(author_id):
+    return db_posts.total_posts_by_author(author_id)
+
+
 class Pagination:
     def __init__(self, page, items, total, per_page=POST_NUM_PAGE):
         # the current page number

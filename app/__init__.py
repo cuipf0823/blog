@@ -6,6 +6,7 @@ from flask_bootstrap import Bootstrap
 from flask_mail import Mail
 from flask_moment import Moment
 from flask_login import LoginManager
+from flask_pagedown import PageDown
 from config import config
 import redis
 
@@ -13,6 +14,7 @@ import redis
 bootstrap = Bootstrap()
 mail = Mail()
 moment = Moment()
+pagedown = PageDown()
 
 rd = None
 
@@ -33,6 +35,7 @@ def create_app(config_name):
     bootstrap.init_app(app)
     mail.init_app(app)
     moment.init_app(app)
+    pagedown.init_app(app)
     global rd
     rd = redis.Redis(host=config[config_name].REDIS_IP, port=config[config_name].REDIS_PORT,
                      db=config[config_name].REDIS_DB, password=config[config_name].REDIS_PWD)

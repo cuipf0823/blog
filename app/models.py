@@ -11,6 +11,8 @@ from .data import db_users, db_posts
 from . import login_manager
 import hashlib
 import math
+import bleach
+import markdown
 
 # maximum number articles per page
 POST_NUM_PAGE = 10
@@ -334,7 +336,15 @@ class Post:
 
 
 def publish_post(title, author_id, content, category):
-    db_posts.publish_post(title, author_id, content, category)
+    # 服务器端将Markdown转化为Html, 直接保存
+    allowed_tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code',
+                    'em', 'i', 'li', 'ol', 'pre', 'strong', 'ul',
+                    'h1', 'h2', 'h3', 'p']
+    print(content)
+    content_html = bleach.linkify(bleach.clean(markdown.markdown(content, output_format='html'),
+                                               tags=allowed_tags, strip=True))
+    print(content_html)
+    db_posts.publish_post(title, author_id, content_html, category)
 
 
 def posts_by_page(page_id):

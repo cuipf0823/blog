@@ -8,10 +8,14 @@
                 </a>
             </div>
             <div class="post-content">
-                <div class="post-title">{{ post.title }}</div>
+                <div class="post-title">
+                    <h2>{{ post.title }}</h2>
+                </div>
                 <div class="post-time">{{ post.time }}</div>
                 <div class="post-author"><a href="{{ url_for('.user', username=post.author) }}">{{ post.author }}</a></div>
-                <div class="post-body">{{ post.content }}</div>
+                <div class="post-body">
+                    {{ post.content | safe }}
+                </div>
             </div>
         </li>
     {% endfor %}

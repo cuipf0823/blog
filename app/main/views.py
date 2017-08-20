@@ -77,3 +77,8 @@ def edit_profile_admin(user_id):
     form.location.data = edit_user.location
     form.about_me.data = edit_user.about_me
     return render_template('edit_profile.html', form=form, user=edit_user)
+
+
+@main.route('/post/<int:post_id>')
+def post(post_id):
+    pass

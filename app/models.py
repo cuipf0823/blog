@@ -227,9 +227,6 @@ class User(UserMixin):
     def last_seen(self, value):
         self._last_seen = value
 
-    def __str__(self):
-        return ''
-
 
 def get_user(email):
     user_info = db_users.get_user(email)
@@ -291,16 +288,13 @@ def load_user(user_id):
 
 
 class Post:
-    def __init__(self, dicts):
-        self._title = dicts['title']
-        self._author_id = dicts['author_id']
-        self._content = dicts['content']
-        self._category = dicts['category']
-        self._time = dicts['time']
+    def __init__(self, **kwargs):
+        self._title = kwargs['title']
+        self._author_id = kwargs['author_id']
+        self._content = kwargs['content']
+        self._category = kwargs['category']
+        self._time = kwargs['time']
         self._author = get_user_by_id(self.author_id).username
-
-    def __str__(self):
-        return ''
 
     @property
     def title(self):
@@ -340,10 +334,9 @@ def publish_post(title, author_id, content, category):
     allowed_tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code',
                     'em', 'i', 'li', 'ol', 'pre', 'strong', 'ul',
                     'h1', 'h2', 'h3', 'p']
-    print(content)
+    # print(content)
     content_html = bleach.linkify(bleach.clean(markdown.markdown(content, output_format='html'),
                                                tags=allowed_tags, strip=True))
-    print(content_html)
     db_posts.publish_post(title, author_id, content_html, category)
 
 
@@ -352,7 +345,8 @@ def posts_by_page(page_id):
     if post_ids is not None:
         posts = []
         for post_id in post_ids:
-            posts.append(Post(db_posts.get_post(post_id)))
+            print(db_posts.get_post(post_id))
+            posts.append(Post(**db_posts.get_post(post_id)))
         return posts
 
 
@@ -361,7 +355,7 @@ def posts_by_author(author_id, page_id):
     if post_ids is not None:
         posts = []
         for post_id in post_ids:
-            posts.append(Post(db_posts.get_post(post_id)))
+            posts.append(Post(**db_posts.get_post(post_id)))
         return posts
 
 
@@ -371,6 +365,10 @@ def total_posts():
 
 def total_posts_by_author(author_id):
     return db_posts.total_posts_by_author(author_id)
+
+
+def get_post(post_id):
+    return db_posts.get_post(post_id)
 
 
 class Pagination:

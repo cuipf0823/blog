@@ -8,7 +8,7 @@ from . import main
 from ..models import get_user_by_name, update_frofile, update_admin_profile
 from ..models import get_user_by_id, Permission, Pagination
 from ..models import publish_post, posts_by_page, posts_by_author
-from ..models import total_posts, total_posts_by_author
+from ..models import total_posts, total_posts_by_author, get_post
 from .forms import EditProfileForm, EditProfileFormAdmin, PostForm
 from ..decorators import admin_required
 
@@ -81,4 +81,5 @@ def edit_profile_admin(user_id):
 
 @main.route('/post/<int:post_id>')
 def post(post_id):
-    pass
+    post_info = get_post(post_id)
+    return render_template('post.html', posts=[post_info])

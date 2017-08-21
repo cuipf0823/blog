@@ -24,6 +24,8 @@ POSTS_COUNT = 'posts:count'
 POSTS_DEL_LIST = 'posts:del_list'
 # 每个作者文章列表
 POST_AUTHOR_LIST = 'posts:author:'
+# post infomation
+POST_INFO = 'post:'
 
 
 def publish_post(title, author_id, content, category):
@@ -31,8 +33,8 @@ def publish_post(title, author_id, content, category):
      publish post , temporarily unlocking
     """
     post_id = rd.incr(POSTS_COUNT)
-    rd.hmset('post:{}'.format(post_id), {'title': title, 'author_id': author_id, 'content': content,
-                                         'category': category, 'time': datetime.utcnow()})
+    rd.hmset(POST_INFO + '{}'.format(post_id), {'post_id': post_id, 'title': title, 'author_id': author_id,
+                                                'content': content, 'category': category, 'time': datetime.utcnow()})
     rd.lpush(POSTS_LIST, post_id)
     rd.lpush(POST_AUTHOR_LIST + '{}'.format(author_id), post_id)
 
@@ -76,7 +78,7 @@ def get_post(post_id):
     get post infomation
     return dict
     """
-    return util.convert(rd.hgetall('post:{}'.format(post_id)))
+    return util.convert(rd.hgetall(POST_INFO + '{}'.format(post_id)))
 
 
 def posts_by_author(author_id, page_id, per_page):

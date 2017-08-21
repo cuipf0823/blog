@@ -71,22 +71,25 @@ class AnonymousUser(AnonymousUserMixin):
 
 
 class User(UserMixin):
-    def __init__(self, dicts):
-        self._id = dicts['user_id']
-        self._username = dicts['name']
-        self._password_hash = dicts['password']
-        self._email = dicts['email']
-        self._role_id = int(dicts['role_id'])
-        self._confirmed = dicts['confirmed']
-        self._location = dicts['location']
-        self._about_me = dicts['about_me']
+    def __init__(self, **kwargs):
+        self._id = kwargs['user_id']
+        self._username = kwargs['name']
+        self._password_hash = kwargs['password']
+        self._email = kwargs['email']
+        self._role_id = int(kwargs['role_id'])
+        self._confirmed = kwargs['confirmed']
+        self._location = kwargs['location']
+        self._about_me = kwargs['about_me']
         # datetime.strptime('2017-02-14 09:20:54.666000', '%Y-%m-%d %H:%M:%S.%f')
         self._member_since = None
-        if dicts['member_since'] is not None:
-            self._member_since = datetime.strptime(dicts['member_since'], '%Y-%m-%d %H:%M:%S.%f')
+        if kwargs['member_since'] is not None:
+            self._member_since = datetime.strptime(kwargs['member_since'], '%Y-%m-%d %H:%M:%S.%f')
         self._last_seen = None
-        if dicts['last_seen'] is not None:
-            self._last_seen = datetime.strptime(dicts['last_seen'], '%Y-%m-%d %H:%M:%S.%f')
+        if kwargs['last_seen'] is not None:
+            self._last_seen = datetime.strptime(kwargs['last_seen'], '%Y-%m-%d %H:%M:%S.%f')
+
+    def __str__(self):
+        return '(user_id: {0._id}, user_name: {0._username}, email: {0._email}, role_id: {0._role_id})'.format(self)
 
     def verify_password(self, pwd):
         return check_password_hash(self._password_hash, pwd)
@@ -231,22 +234,19 @@ class User(UserMixin):
 def get_user(email):
     user_info = db_users.get_user(email)
     if user_info is not None:
-        return User(user_info)
-    return user_info
+        return User(**user_info)
 
 
 def get_user_by_id(user_id):
     user_info = db_users.get_user_by_id(user_id)
     if user_info is not None:
-        return User(user_info)
-    return user_info
+        return User(**user_info)
 
 
 def get_user_by_name(name):
     user_info = db_users.get_user_by_name(name)
     if user_info is not None:
-        return User(user_info)
-    return user_info
+        return User(**user_info)
 
 
 def register_user(name, pwd, email):
@@ -283,18 +283,25 @@ def load_user(user_id):
     """
     回调函数，根据用户ID查找用户
     """
-    print('user %s login successful' % user_id)
     return get_user_by_id(int(user_id))
 
 
 class Post:
     def __init__(self, **kwargs):
+        self._post_id = kwargs['post_id']
         self._title = kwargs['title']
         self._author_id = kwargs['author_id']
         self._content = kwargs['content']
         self._category = kwargs['category']
         self._time = kwargs['time']
         self._author = get_user_by_id(self.author_id).username
+
+    def __str__(self):
+        return '(post_id: {0._post_id}, title: {0._title}, author: {0._author}, time: {0._time})'.format(self)
+
+    @property
+    def post_id(self):
+        return self._post_id
 
     @property
     def title(self):
@@ -324,6 +331,10 @@ class Post:
     def time(self):
         return self._time
 
+    @property
+    def author(self):
+        return self._author
+
     def author_gravatar(self, size=100, default='identicon', rating='g'):
         user = get_user_by_id(self.author_id)
         return user.gravatar(size, default, rating)
@@ -345,7 +356,6 @@ def posts_by_page(page_id):
     if post_ids is not None:
         posts = []
         for post_id in post_ids:
-            print(db_posts.get_post(post_id))
             posts.append(Post(**db_posts.get_post(post_id)))
         return posts
 
@@ -453,7 +463,7 @@ class Pagination:
 
     def iter_pages(self, left_edge=2, left_current=2, right_current=5, right_edge=2):
         last = 0
-        for num in xrange(1, self.pages + 1):
+        for num in range(1, self.pages + 1):
             if num <= left_edge or \
                     (self._page - left_current - 1 < num < self._page + right_current) or \
                     (num > self._pages - right_edge):

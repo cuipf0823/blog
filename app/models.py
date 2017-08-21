@@ -378,7 +378,9 @@ def total_posts_by_author(author_id):
 
 
 def get_post(post_id):
-    return db_posts.get_post(post_id)
+    post = db_posts.get_post(post_id)
+    if post is not None:
+        return Post(**post)
 
 
 class Pagination:

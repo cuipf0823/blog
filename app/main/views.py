@@ -9,6 +9,7 @@ from ..models import get_user_by_name, update_frofile, update_admin_profile
 from ..models import get_user_by_id, Permission, Pagination
 from ..models import publish_post, posts_by_page, posts_by_author
 from ..models import total_posts, total_posts_by_author, get_post
+from ..models import update_post_content
 from .forms import EditProfileForm, EditProfileFormAdmin, PostForm
 from ..decorators import admin_required
 
@@ -83,3 +84,21 @@ def edit_profile_admin(user_id):
 def post(post_id):
     post_info = get_post(post_id)
     return render_template('post.html', posts=[post_info])
+
+
+@main.route('/edit/<int:post_id>', methods=['GET', 'POST'])
+@login_required
+def edit_post(post_id):
+    post_info = get_post(post_id)
+    # 管理员权限可以修改其他人的
+    if current_user.id != post_info.author_id and not current_user.can(Permission.ADMINISTER):
+        abort(403)
+    form = PostForm()
+    if form.validate_on_submit():
+        # 更新post 内容
+        update_post_content(post_id, form.body.data)
+        flash('The post has been updated.')
+        return redirect(url_for('.post', post_id=post_id))
+    form.body.data = post_info.content
+    return render_template('edit_post.html', form=form)
+

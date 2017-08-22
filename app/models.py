@@ -288,9 +288,9 @@ def load_user(user_id):
 
 class Post:
     def __init__(self, **kwargs):
-        self._post_id = kwargs['post_id']
+        self._post_id = int(kwargs['post_id'])
         self._title = kwargs['title']
-        self._author_id = kwargs['author_id']
+        self._author_id = int(kwargs['author_id'])
         self._content = kwargs['content']
         self._category = kwargs['category']
         self._time = kwargs['time']
@@ -340,15 +340,18 @@ class Post:
         return user.gravatar(size, default, rating)
 
 
-def publish_post(title, author_id, content, category):
+def markdown_to_html(content):
     # 服务器端将Markdown转化为Html, 直接保存
     allowed_tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code',
                     'em', 'i', 'li', 'ol', 'pre', 'strong', 'ul',
                     'h1', 'h2', 'h3', 'p']
     # print(content)
-    content_html = bleach.linkify(bleach.clean(markdown.markdown(content, output_format='html'),
-                                               tags=allowed_tags, strip=True))
-    db_posts.publish_post(title, author_id, content_html, category)
+    return bleach.linkify(bleach.clean(markdown.markdown(content, output_format='html'),
+                                       tags=allowed_tags, strip=True))
+
+
+def publish_post(title, author_id, content, category):
+    return db_posts.publish_post(title, author_id, markdown_to_html(content), category)
 
 
 def posts_by_page(page_id):
@@ -381,6 +384,10 @@ def get_post(post_id):
     post = db_posts.get_post(post_id)
     if post is not None:
         return Post(**post)
+
+
+def update_post_content(post_id, content):
+    return db_posts.update_post_content(post_id, markdown_to_html(content))
 
 
 class Pagination:

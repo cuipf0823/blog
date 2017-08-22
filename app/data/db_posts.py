@@ -39,6 +39,13 @@ def publish_post(title, author_id, content, category):
     rd.lpush(POST_AUTHOR_LIST + '{}'.format(author_id), post_id)
 
 
+def update_post_content(post_id, content):
+    """
+     update post content
+    """
+    return rd.hset(POST_INFO + '{}'.format(post_id), 'content', content)
+
+
 def delete_post(post_id):
     """
     delete post, temporarily unlocking

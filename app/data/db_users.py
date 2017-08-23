@@ -81,3 +81,34 @@ def update_profile(user_id, username, location, about_me):
 def update_admin_profile(user_id, user):
     return rd.hmset('user:%d' % user_id, {'name': user.username, 'email': user.email, 'confirmed': user.confirmed,
                                           'role_id': user.role_id, 'location': user.location, 'about_me': user.about_me})
+
+"""
+1. 用户关注者使用列表类型保存， 键值为：user:follower:user_id
+2. 用户关注的人列表，同样也是用列表类型保存， 键值为：user:following:user_id
+"""
+
+USER_FOLLOWER_LIST = 'user:follower:'
+USER_FOLLOWING_LIST = 'user:following:'
+
+
+def follow(user_id, follower):
+    """
+     user_id following follower
+    """
+    rd.lpush(USER_FOLLOWING_LIST + '{}'.format(user_id), follower)
+    rd.lpush(USER_FOLLOWER_LIST + '{}'.format(follower), user_id)
+
+
+def unfollow(user_id, follower):
+    """
+     user_id cancel follow followers
+    """
+    rd.lrem(USER_FOLLOWING_LIST + '{}'.format(user_id), follower)
+    rd.lrem(USER_FOLLOWER_LIST + '{}'.format(follower), user_id)
+
+
+def is_follow(user_id, follower):
+    """
+     whether user_id has followed followers
+    """
+    pass

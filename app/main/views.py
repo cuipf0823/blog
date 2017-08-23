@@ -12,6 +12,7 @@ from ..models import total_posts, total_posts_by_author, get_post
 from ..models import update_post_content
 from .forms import EditProfileForm, EditProfileFormAdmin, PostForm
 from ..decorators import admin_required
+import html2text
 
 
 @main.route('/', methods=['GET', 'POST'])
@@ -99,6 +100,6 @@ def edit_post(post_id):
         update_post_content(post_id, form.body.data)
         flash('The post has been updated.')
         return redirect(url_for('.post', post_id=post_id))
-    form.body.data = post_info.content
+    form.body.data = html2text.html2text(post_info.content)
     return render_template('edit_post.html', form=form)
 

@@ -9,9 +9,9 @@ from ..models import get_user_by_name, update_frofile, update_admin_profile
 from ..models import get_user_by_id, Permission, Pagination
 from ..models import publish_post, posts_by_page, posts_by_author
 from ..models import total_posts, total_posts_by_author, get_post
-from ..models import update_post_content
+from ..models import update_post_content, Relation
 from .forms import EditProfileForm, EditProfileFormAdmin, PostForm
-from ..decorators import admin_required
+from ..decorators import admin_required, permission_required
 import html2text
 
 
@@ -102,4 +102,38 @@ def edit_post(post_id):
         return redirect(url_for('.post', post_id=post_id))
     form.body.data = html2text.html2text(post_info.content)
     return render_template('edit_post.html', form=form)
+
+
+@main.route('/follow/<username>')
+@login_required
+@permission_required(Permission.FOLLOW)
+def follow(username):
+    user_info = get_user_by_name(username)
+    if user_info is None:
+        flash('Invalid user!')
+        return redirect(url_for('.index'))
+    if Relation.is_followed(current_user.id, user_info.id):
+        flash('You are already following this user.')
+        return redirect(url_for('.user', username=username, relation=Relation()))
+    Relation.follow(current_user.id, user_info.id)
+    flash('You are now following %s.' % username)
+    return redirect(url_for('.user', username=username, relation=Relation()))
+
+
+@main.route('/unfollow/<username>')
+@login_required
+@permission_required(Permission.FOLLOW)
+def unfollow(username):
+    user_info = get_user_by_name(username)
+    if user_info is None:
+        flash('Invalid user.')
+        return redirect(url_for('.index'))
+    if not Relation.is_followed(current_user.id, user_info.id):
+        flash('You are not following this user.')
+        return redirect(url_for('.user', username=username, relation=Relation()))
+    Relation.unfollow(current_user.id, user_info.id)
+    flash('You are not following %s anymore.' % username)
+    return redirect(url_for('.user', username=username, relation=Relation()))
+
+
 

@@ -107,8 +107,48 @@ def unfollow(user_id, follower):
     rd.lrem(USER_FOLLOWER_LIST + '{}'.format(follower), user_id)
 
 
-def is_follow(user_id, follower):
+def is_followed(user_id, follower):
     """
      whether user_id has followed followers
+     效率可能较低但暂未想到好的方法
     """
-    pass
+    followings = rd.lrange(USER_FOLLOWING_LIST + '{}'.format(user_id), 1, -1)
+    if '{}'.format(follower).encode() in followings:
+        return True
+    else:
+        return False
+
+
+def is_followed_by(user_id, follower):
+    """
+     whether user_is has been followed by follower
+    """
+    followers = rd.lrange(USER_FOLLOWER_LIST + '{}'.format(user_id), 1, -1)
+    if '{}'.format(follower).encode() in followers:
+        return True
+    else:
+        return False
+
+
+def followers_by_page(user_id, page_id, per_page):
+    """
+    paging display
+    get followers list by user_id
+    """
+    pages = int(rd.llen(USER_FOLLOWER_LIST + '{}'.format(user_id)) / per_page + 1)
+    if 0 < page_id <= pages:
+        return util.convert(rd.lrange(USER_FOLLOWER_LIST + '{}'.format(user_id), (page_id - 1) * per_page,
+                                      page_id * per_page - 1))
+    print('followers_by_page invaild param user_id {0} page id[{1}, {2}]: {3}'.format(user_id, 1, pages, page_id))
+
+
+def following_by_page(user_id, page_id, per_page):
+    """
+    paging display
+    get has been following user list by user_id
+    """
+    pages = int(rd.llen(USER_FOLLOWING_LIST + '{}'.format(user_id)) / per_page + 1)
+    if 0 < page_id <= pages:
+        return util.convert(rd.lrange(USER_FOLLOWING_LIST + '{}'.format(user_id), (page_id - 1) * per_page,
+                                      page_id * per_page - 1))
+    print('following_by_page invaild param user_id {0} page id[{1}, {2}]: {3}'.format(user_id, 1, pages, page_id))

@@ -14,8 +14,10 @@ import math
 import bleach
 import markdown
 
-# maximum number articles per page
+# maximum number of articles per page
 POST_NUM_PAGE = 10
+# maximum number of followers per page
+FOLLOWERS_NUM_PAGE = 50
 
 ANONYMOUS_ROLE = 0  # 匿名用户 为登陆的用户, 只有阅读权限
 USER_ROLE = 1  # 普通用户  新用户默认角色, 可以发表文章, 评论, 关注他人
@@ -480,6 +482,32 @@ class Pagination:
                     yield None
                 yield num
                 last = num
+
+
+class Relation:
+    @staticmethod
+    def follow(user_id, follower):
+        db_users.follow(user_id, follower)
+
+    @staticmethod
+    def unfollow(user_id, follower):
+        db_users.unfollow(user_id, follower)
+
+    @staticmethod
+    def is_followed(user_id, follower):
+        db_users.is_followed(user_id, follower)
+
+    @staticmethod
+    def is_followed_by(user_id, follower):
+        db_users.is_followed_by(user_id, follower)
+
+    @staticmethod
+    def followers_by_page(user_id, page_id, per_page=FOLLOWERS_NUM_PAGE):
+        return db_users.followers_by_page(user_id, page_id, per_page)
+
+    @staticmethod
+    def following_by_page(user_id, page_id, per_page=FOLLOWERS_NUM_PAGE):
+        return db_users.following_by_page(user_id, page_id, per_page)
         
 
 

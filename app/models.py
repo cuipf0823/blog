@@ -509,6 +509,11 @@ class Relation:
     def following_by_page(user_id, page_id, per_page=FOLLOWERS_NUM_PAGE):
         return db_users.following_by_page(user_id, page_id, per_page)
         
+    @staticmethod
+    def followers_count(user_id):
+        return db_users.followers_count(user_id)
 
-
+    @staticmethod
+    def following_count(user_id):
+        return db_users.following_count(user_id)
 

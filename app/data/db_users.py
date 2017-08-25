@@ -152,3 +152,18 @@ def following_by_page(user_id, page_id, per_page):
         return util.convert(rd.lrange(USER_FOLLOWING_LIST + '{}'.format(user_id), (page_id - 1) * per_page,
                                       page_id * per_page - 1))
     print('following_by_page invaild param user_id {0} page id[{1}, {2}]: {3}'.format(user_id, 1, pages, page_id))
+
+
+def followers_count(user_id):
+    """
+     get user the total of followers
+    """
+    return rd.llen(USER_FOLLOWER_LIST + '{}'.format(user_id))
+
+
+def following_count(user_id):
+    """
+     get the count of user has followed
+    """
+    return rd.llen(USER_FOLLOWING_LIST + '{}'.format(user_id))
+

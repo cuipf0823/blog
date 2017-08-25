@@ -9,7 +9,7 @@ from ..models import get_user_by_name, update_frofile, update_admin_profile
 from ..models import get_user_by_id, Permission, Pagination
 from ..models import publish_post, posts_by_page, posts_by_author
 from ..models import total_posts, total_posts_by_author, get_post
-from ..models import update_post_content, Relation
+from ..models import update_post_content, Relation, FOLLOWERS_NUM_PAGE
 from .forms import EditProfileForm, EditProfileFormAdmin, PostForm
 from ..decorators import admin_required, permission_required
 import html2text
@@ -35,7 +35,8 @@ def user(username):
     page = request.args.get('page', 1, type=int)
     posts = posts_by_author(user_info.id, page)
     pagination = Pagination(page, posts, total_posts_by_author(user_info.id))
-    return render_template('user.html', user=user_info, posts=posts, pagination=pagination)
+    return render_template('user.html', user=user_info, posts=posts, pagination=pagination,
+                           permission=Permission, relation=Relation)
 
 
 @main.route('/edit-profile', methods=['GET', 'POST'])
@@ -130,10 +131,25 @@ def unfollow(username):
         return redirect(url_for('.index'))
     if not Relation.is_followed(current_user.id, user_info.id):
         flash('You are not following this user.')
-        return redirect(url_for('.user', username=username, relation=Relation()))
+        return redirect(url_for('.user', username=username, relation=Relation))
     Relation.unfollow(current_user.id, user_info.id)
     flash('You are not following %s anymore.' % username)
-    return redirect(url_for('.user', username=username, relation=Relation()))
+    return redirect(url_for('.user', username=username, relation=Relation))
 
 
+@main.route('/followers/<username>')
+def followers(username):
+    user_info = get_user_by_name(username)
+    if user_info is None:
+        flash('Invalid user!')
+        return redirect(url_for('.index'))
+    page = request.args.get('page', 1, type=int)
+    followers_p = Relation.followers_by_page(user.id, page)
+    pagination = Pagination(page, followers_p, Relation.followers_count(user.id), FOLLOWERS_NUM_PAGE)
+    return render_template('follower.html', user=user_info, title='Follower of', endpoint='.followers',
+                           pagination=pagination, )
 
+
+@main.route('/following/<username>')
+def following(username):
+    pass

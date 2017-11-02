@@ -30,13 +30,16 @@ POST_INFO = 'post:'
 
 def publish_post(title, author_id, content, category):
     """
-     publish post , temporarily unlocking
+    publish post
     """
     post_id = rd.incr(POSTS_COUNT)
+    pipe = rd.pipeline()
+    pipe.multi()
     rd.hmset(POST_INFO + '{}'.format(post_id), {'post_id': post_id, 'title': title, 'author_id': author_id,
                                                 'content': content, 'category': category, 'time': datetime.utcnow()})
     rd.lpush(POSTS_LIST, post_id)
     rd.lpush(POST_AUTHOR_LIST + '{}'.format(author_id), post_id)
+    pipe.execute()
 
 
 def update_post_content(post_id, content):
@@ -48,10 +51,13 @@ def update_post_content(post_id, content):
 
 def delete_post(post_id):
     """
-    delete post, temporarily unlocking
+    delete post
     """
+    pipe = rd.pipeline()
+    pipe.multi()
     rd.lrem(POSTS_LIST, post_id, 0)
     rd.lpush(POSTS_DEL_LIST, post_id)
+    pipe.execute()
 
 
 def total_posts():

@@ -18,11 +18,14 @@ def reg_user(username, pwd, email, role_id):
     """
     user_id = rd.incr('users:count')
     # 保存用户信息
+    pipe = rd.pipeline()
+    pipe.multi()
     rd.hmset('user:%d' % user_id, {'name': username, 'password': pwd, 'email': email, 'role_id': role_id,
                                    'member_since': datetime.utcnow(), 'confirmed': 0, 'about_me': '', 'location': '',
                                    'last_seen': datetime.utcnow()})
     rd.hset('email.to.id', email, user_id)
     rd.hset('name.to.id', username, user_id)
+    pipe.execute()
     return user_id
 
 
@@ -95,16 +98,22 @@ def follow(user_id, follower):
     """
      user_id following follower
     """
+    pipe = rd.pipeline()
+    pipe.multi()
     rd.lpush(USER_FOLLOWING_LIST + '{}'.format(user_id), follower)
     rd.lpush(USER_FOLLOWER_LIST + '{}'.format(follower), user_id)
+    pipe.execute()
 
 
 def unfollow(user_id, follower):
     """
      user_id cancel follow followers
     """
+    pipe = rd.pipeline()
+    pipe.multi()
     rd.lrem(USER_FOLLOWING_LIST + '{}'.format(user_id), follower)
     rd.lrem(USER_FOLLOWER_LIST + '{}'.format(follower), user_id)
+    pipe.execute()
 
 
 def is_followed(user_id, follower):
@@ -135,11 +144,11 @@ def followers_by_page(user_id, page_id, per_page):
     paging display
     get followers list by user_id
     """
-    pages = int(rd.llen(USER_FOLLOWER_LIST + '{}'.format(user_id)) / per_page + 1)
-    if 0 < page_id <= pages:
+    count = int(rd.llen(USER_FOLLOWER_LIST + '{}'.format(user_id)) / per_page + 1)
+    if 0 < page_id <= count:
         return util.convert(rd.lrange(USER_FOLLOWER_LIST + '{}'.format(user_id), (page_id - 1) * per_page,
                                       page_id * per_page - 1))
-    print('followers_by_page invaild param user_id {0} page id[{1}, {2}]: {3}'.format(user_id, 1, pages, page_id))
+    print('followers_by_page invaild param user_id {0} page id[{1}, {2}]: {3}'.format(user_id, 1, count, page_id))
 
 
 def following_by_page(user_id, page_id, per_page):

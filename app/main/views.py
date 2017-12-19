@@ -117,7 +117,7 @@ def follow(username):
         flash('You are already following this user.')
         return redirect(url_for('.user', username=username, relation=Relation()))
     Relation.follow(current_user.id, user_info.id)
-    flash('You are now following %s.' % username)
+    flash('You are now following {}.'.format(username))
     return redirect(url_for('.user', username=username, relation=Relation()))
 
 
@@ -133,7 +133,7 @@ def unfollow(username):
         flash('You are not following this user.')
         return redirect(url_for('.user', username=username, relation=Relation))
     Relation.unfollow(current_user.id, user_info.id)
-    flash('You are not following %s anymore.' % username)
+    flash('You are not following {} anymore.'.format(username))
     return redirect(url_for('.user', username=username, relation=Relation))
 
 
@@ -144,9 +144,9 @@ def followers(username):
         flash('Invalid user!')
         return redirect(url_for('.index'))
     page = request.args.get('page', 1, type=int)
-    followers_p = Relation.followers_by_page(user.id, page)
-    pagination = Pagination(page, followers_p, Relation.followers_count(user.id), FOLLOWERS_NUM_PAGE)
-    return render_template('follower.html', user=user_info, title='Follower of', endpoint='.followers',
+    followers_p = Relation.followers_by_page(user_info.id, page)
+    pagination = Pagination(page, followers_p, Relation.followers_count(user_info.id), FOLLOWERS_NUM_PAGE)
+    return render_template('followers.html', user=user_info, title='Follower of', endpoint='.followers',
                            pagination=pagination, )
 
 

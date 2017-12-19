@@ -1,7 +1,6 @@
 # !/usr/bin/python
 # coding=utf-8
 import os
-import sys
 
 # 存储配置
 basedir = os.path.abspath(os.path.dirname(__file__))
